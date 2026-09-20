@@ -70,6 +70,16 @@ class AIService:
 
         return content
 
+    @staticmethod
+    def _build_context_summary(text: str, max_length: int = 140) -> str:
+        normalized = " ".join(text.split())
+        if len(normalized) <= max_length:
+            return normalized
+        truncated = normalized[: max_length - 3].rsplit(" ", 1)[0].rstrip(" ,;:-")
+        if not truncated:
+            truncated = normalized[: max_length - 3]
+        return f"{truncated}..."
+
     def classify_text(self, text: str) -> ClassificationResponse:
         model = self.router.get_model(TaskType.CLASSIFY)
         prompt = (
@@ -101,19 +111,33 @@ class AIService:
             "sentiment present in the text — for mixed text, include emotions for "
             "both the positive elements (e.g. admiration, satisfaction) and the "
             "negative elements (e.g. disappointment, frustration), not just one side.\n\n"
+            "contextSummary must be a concise summary of what the text is actually "
+            "about. For neutral or logistical text, this field should mention the "
+            "main subject, event, or request so the response clearly reflects the "
+            "input content rather than only generic sentiment metadata.\n\n"
             "Examples:\n"
             'Negative text -> {"overallSentiment": "negative", "sentimentScore": -0.8, '
-            '"emotions": ["anger", "disappointment"], "confidence": 0.9}\n'
+            '"emotions": ["anger", "disappointment"], "confidence": 0.9, '
+            '"contextSummary": "Complaint about a broken product and delayed refund"}\n'
             'Positive text -> {"overallSentiment": "positive", "sentimentScore": 0.8, '
-            '"emotions": ["joy", "excitement"], "confidence": 0.9}\n'
+            '"emotions": ["joy", "excitement"], "confidence": 0.9, '
+            '"contextSummary": "Praise for a product purchase and customer service"}\n'
             'Mixed text -> {"overallSentiment": "mixed", "sentimentScore": 0.1, '
-            '"emotions": ["admiration", "disappointment"], "confidence": 0.9}\n\n'
+            '"emotions": ["admiration", "disappointment"], "confidence": 0.9, '
+            '"contextSummary": "Movie review praising effects but criticizing the plot"}\n'
+            'Neutral text -> {"overallSentiment": "neutral", "sentimentScore": 0.0, '
+            '"emotions": [], "confidence": 0.9, '
+            '"contextSummary": "Meeting reminder with time, location, and required items"}\n\n'
             "Return JSON in this exact format:\n"
             '{"overallSentiment": "positive|negative|neutral|mixed", "sentimentScore": 0.0, '
-            '"emotions": ["emotion1", "emotion2"], "confidence": 0.9}'
+            '"emotions": ["emotion1", "emotion2"], "confidence": 0.9, '
+            '"contextSummary": "brief topic summary"}'
         )
         response = self._chat(prompt, model, task_type="sentiment")
-        return guardrails_engine.validate_output(response, SentimentResponse, task_type="sentiment")
+        result = guardrails_engine.validate_output(response, SentimentResponse, task_type="sentiment")
+        if result.contextSummary:
+            return result
+        return result.model_copy(update={"contextSummary": self._build_context_summary(text)})
 
     def summarize_text(self, text: str) -> SummaryResponse:
         model = self.router.get_model(TaskType.SUMMARIZE)
