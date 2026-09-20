@@ -6,12 +6,14 @@ on:
     paths:
       - 'promptfoo-tests/**'
       - 'llm-multiroute/**'
+      - '.github/workflows/**'
       - '.github/workflows/promptfoo-tests-ci.yml'
   pull_request:
     branches: [main, master]
     paths:
       - 'promptfoo-tests/**'
       - 'llm-multiroute/**'
+      - '.github/workflows/**'
       - '.github/workflows/promptfoo-tests-ci.yml'
   workflow_dispatch:
 

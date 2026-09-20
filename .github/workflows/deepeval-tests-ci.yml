@@ -6,12 +6,14 @@ on:
     paths:
       - 'deepeval-tests/**'
       - 'llm-multiroute/**'
+      - '.github/workflows/**'
       - '.github/workflows/deepeval-tests-ci.yml'
   pull_request:
     branches: [main, master]
     paths:
       - 'deepeval-tests/**'
       - 'llm-multiroute/**'
+      - '.github/workflows/**'
       - '.github/workflows/deepeval-tests-ci.yml'
   workflow_dispatch:
 
