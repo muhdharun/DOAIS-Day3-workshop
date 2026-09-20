@@ -30,8 +30,3 @@ class SentimentResponse(BaseModel):
         description="Confidence score (0.0 to 1.0)",
         json_schema_extra={"example": 0.92},
     )
-    contextSummary: str | None = Field(
-        default=None,
-        description="Brief summary of the input text's topic or subject matter",
-        json_schema_extra={"example": "Meeting reminder about tomorrow's 3 PM conference room B meeting."},
-    )

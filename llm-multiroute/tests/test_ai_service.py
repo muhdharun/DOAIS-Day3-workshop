@@ -133,7 +133,6 @@ class TestAnalyzeSentiment:
         assert result.overallSentiment == "neutral"
         assert result.sentimentScore == 0.0
         assert result.emotions == []
-        assert result.contextSummary == "The meeting is at 3 PM."
 
     def test_markdown_wrapped_response(self, ai_service, mock_http_client):
         json_response = '```json\n{"overallSentiment": "positive", "sentimentScore": 0.9, "emotions": ["happiness"], "confidence": 0.95}\n```'
@@ -142,18 +141,6 @@ class TestAnalyzeSentiment:
         result = ai_service.analyze_sentiment("Great news!")
 
         assert result.overallSentiment == "positive"
-        assert result.contextSummary == "Great news!"
-
-    def test_preserves_model_context_summary(self, ai_service, mock_http_client):
-        json_response = (
-            '{"overallSentiment": "neutral", "sentimentScore": 0.0, "emotions": [], '
-            '"confidence": 0.95, "contextSummary": "Meeting reminder with time and location details"}'
-        )
-        _setup_chat_response(mock_http_client, json_response)
-
-        result = ai_service.analyze_sentiment("The meeting is at 3 PM.")
-
-        assert result.contextSummary == "Meeting reminder with time and location details"
 
 
 class TestSummarizeText:
